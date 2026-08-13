@@ -14,6 +14,23 @@ npm run dev          # starts API (:8787) + web app (:5173)
 
 Then open http://localhost:5173.
 
+## Deploy (Fly.io)
+
+The app runs as one always-on Node process (in-memory rooms + WebSockets), with
+the built frontend served by the API server. One-time setup:
+
+```
+brew install flyctl
+fly auth signup          # or: fly auth login
+fly launch --no-deploy   # accepts fly.toml; pick an app name + region
+fly volumes create data --size 1   # persists the daily flight + leaderboard
+fly secrets set PHOTO_CONTACT=you@example.com   # Planespotters API contact
+fly deploy
+```
+
+Then the game lives at `https://<app-name>.fly.dev`. Later updates are just
+`fly deploy`.
+
 ## Data sources
 
 - Live positions: [adsb.lol](https://api.adsb.lol) (community ADS-B, free)

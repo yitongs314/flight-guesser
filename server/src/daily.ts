@@ -10,12 +10,10 @@ import type { Mode } from './types';
  * disk so dev restarts and redeploys don't reroll the day.
  */
 
-const STATE_FILE = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'data',
-  'daily.json',
-);
+// Overridable so deployments can point at a persistent volume.
+const STATE_FILE =
+  process.env.DAILY_STATE_PATH ??
+  path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'daily.json');
 
 // Day #1 = the game's launch day.
 const DAY_ZERO = Math.floor(Date.UTC(2026, 7, 13) / 86_400_000) - 1;

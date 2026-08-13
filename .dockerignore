@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+web/dist
+.git
+.claude
+server/.env
+server/data/daily.json
+*.log
+.DS_Store
+Dockerfile
+fly.toml

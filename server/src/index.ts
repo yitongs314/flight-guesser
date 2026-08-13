@@ -1,4 +1,7 @@
 import './env';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
 import Fastify from 'fastify';
 import type { WebSocket } from 'ws';
@@ -186,10 +189,33 @@ app.register(async (instance) => {
   });
 });
 
-const port = Number(process.env.API_PORT ?? 8787);
+const isProd = process.env.NODE_ENV === 'production';
+
+if (isProd) {
+  // Production serves the built frontend from the same process.
+  const webDist = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    'web',
+    'dist',
+  );
+  app.register(fastifyStatic, { root: webDist });
+  app.setNotFoundHandler((req, reply) => {
+    if (req.method !== 'GET' || req.raw.url?.startsWith('/api/')) {
+      return reply.status(404).send({ error: 'Not found.' });
+    }
+    // SPA fallback
+    return reply.sendFile('index.html');
+  });
+}
+
+// Dev deliberately ignores PORT (tooling injects it); production respects it.
+const port = Number(process.env.API_PORT ?? (isProd ? (process.env.PORT ?? 8080) : 8787));
+const host = isProd ? '0.0.0.0' : '127.0.0.1';
 app
-  .listen({ port, host: '127.0.0.1' })
-  .then(() => console.log(`Flight Guesser API listening on http://127.0.0.1:${port}`))
+  .listen({ port, host })
+  .then(() => console.log(`Flight Guesser listening on http://${host}:${port}`))
   .catch((err) => {
     console.error(err);
     process.exit(1);
